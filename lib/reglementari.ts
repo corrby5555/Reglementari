@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 import type { Reglementare } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { parseIndicativeReferences, regulationReference } from "@/lib/indicative-references";
-import { matchesPermissiveSearch } from "@/lib/search";
+import { searchScore } from "@/lib/search";
 
 export type RegulationSortField = "indicativ" | "tipReglementare" | "tipDocument";
 export type RegulationSortDirection = "asc" | "desc";
@@ -17,6 +17,7 @@ export type RegulationFilters = {
   an?: string;
   sort?: string;
   dir?: string;
+  cautareLarga?: string;
 };
 
 export function buildWhere(filters: RegulationFilters, includeSearch = true): Prisma.ReglementareWhereInput {
@@ -47,8 +48,21 @@ export async function listRegulations(filters: RegulationFilters = {}) {
     orderBy: [{ indicativ: "asc" }, { an: "asc" }],
   });
 
-  const searchedRows = filters.q ? rows.filter((row) => matchesPermissiveSearch(row, filters.q || "")) : rows;
-  return sortRegulations(searchedRows, filters.sort, filters.dir);
+  if (filters.q) {
+    const wideSearch = filters.cautareLarga === "1" || filters.cautareLarga === "true" || filters.cautareLarga === "on";
+    const scoredRows = rows
+      .map((row) => ({ row, score: searchScore(row, filters.q || "", wideSearch) }))
+      .filter((item): item is { row: Reglementare; score: number } => item.score !== null);
+
+    return scoredRows
+      .sort((left, right) => {
+        if (right.score !== left.score) return right.score - left.score;
+        return sortRegulations([left.row, right.row], filters.sort, filters.dir)[0].id === left.row.id ? -1 : 1;
+      })
+      .map((item) => item.row);
+  }
+
+  return sortRegulations(rows, filters.sort, filters.dir);
 }
 
 

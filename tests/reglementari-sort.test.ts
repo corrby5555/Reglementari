@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Reglementare } from "@prisma/client";
 import { sortRegulations, sortRegulationsByIndicativ } from "../lib/reglementari";
-import { matchesPermissiveSearch } from "../lib/search";
+import { matchesPermissiveSearch, permissiveSearchScore, strictSearchScore } from "../lib/search";
 
 function row(indicativ: string, overrides: Partial<Reglementare> = {}): Reglementare {
   return {
@@ -81,15 +81,20 @@ describe("cautarea permisiva in catalog", () => {
   });
 
   it("gaseste indicative indiferent de separator", () => {
-    expect(matchesPermissiveSearch(regulation, "P118")).toBe(true);
-    expect(matchesPermissiveSearch(regulation, "P_118")).toBe(true);
-    expect(matchesPermissiveSearch(regulation, "P-118")).toBe(true);
+    expect(strictSearchScore(regulation, "P118")).not.toBeNull();
+    expect(strictSearchScore(regulation, "P_118")).not.toBeNull();
+    expect(strictSearchScore(regulation, "P-118")).not.toBeNull();
   });
 
-  it("gaseste cuvinte fara diacritice si cu mici greseli", () => {
-    expect(matchesPermissiveSearch(regulation, "școală")).toBe(true);
-    expect(matchesPermissiveSearch(regulation, "scoala")).toBe(true);
-    expect(matchesPermissiveSearch(regulation, "școli")).toBe(true);
+  it("cautarea implicita gaseste cuvinte fara diacritice, dar nu corecteaza greseli", () => {
+    expect(strictSearchScore(regulation, "școală")).not.toBeNull();
+    expect(strictSearchScore(regulation, "scoala")).not.toBeNull();
+    expect(strictSearchScore(regulation, "școli")).not.toBeNull();
+    expect(strictSearchScore(regulation, "scloi")).toBeNull();
+  });
+
+  it("cautarea larga accepta mici greseli", () => {
     expect(matchesPermissiveSearch(regulation, "scloi")).toBe(true);
+    expect(permissiveSearchScore(regulation, "scloi")).not.toBeNull();
   });
 });

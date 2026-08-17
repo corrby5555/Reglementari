@@ -70,11 +70,8 @@ function tokenMatches(queryToken: string, targetToken: string) {
   return damerauLevenshtein(queryToken, targetToken) <= maxDistance;
 }
 
-export function matchesPermissiveSearch(row: Reglementare, query: string) {
-  const queryText = normalizeSearchText(query);
-  if (!queryText) return true;
-
-  const searchable = [
+function searchableText(row: Reglementare) {
+  return [
     row.indicativ,
     `${row.indicativ} ${row.an}`,
     `${row.indicativ}/${row.an}`,
@@ -82,14 +79,58 @@ export function matchesPermissiveSearch(row: Reglementare, query: string) {
     row.descriere,
     row.tipCladire,
   ].join(" ");
+}
 
-  const targetText = normalizeSearchText(searchable);
-  if (targetText.includes(queryText)) return true;
+export function strictSearchScore(row: Reglementare, query: string) {
+  const queryText = normalizeSearchText(query);
+  if (!queryText) return 0;
 
   const compactQuery = compactSearchText(query);
-  if (compactQuery && compactSearchText(row.indicativ).includes(compactQuery)) return true;
-  if (compactQuery && compactSearchText(`${row.indicativ}${row.an}`).includes(compactQuery)) return true;
+  const compactIndicativ = compactSearchText(row.indicativ);
+  const compactIndicativWithYear = compactSearchText(`${row.indicativ}${row.an}`);
+  if (compactQuery && compactIndicativ === compactQuery) return 1000;
+  if (compactQuery && compactIndicativWithYear === compactQuery) return 990;
+  if (compactQuery && compactIndicativ.startsWith(compactQuery)) return 920;
+  if (compactQuery && compactIndicativ.includes(compactQuery)) return 900;
+  if (compactQuery && compactIndicativWithYear.includes(compactQuery)) return 880;
 
-  const targetTokens = searchTokens(searchable);
-  return searchTokens(queryText).every((queryToken) => targetTokens.some((targetToken) => tokenMatches(queryToken, targetToken)));
+  const normalizedTitle = normalizeSearchText(row.denumireExacta);
+  if (normalizedTitle.includes(queryText)) return normalizedTitle.startsWith(queryText) ? 760 : 720;
+
+  const normalizedKeywords = normalizeSearchText(row.tipCladire);
+  if (normalizedKeywords.includes(queryText)) return 680;
+
+  const normalizedDescription = normalizeSearchText(row.descriere);
+  if (normalizedDescription.includes(queryText)) return 620;
+
+  const queryTokens = searchTokens(queryText);
+  const targetTokens = searchTokens(searchableText(row));
+  if (queryTokens.length > 0 && queryTokens.every((queryToken) => targetTokens.some((targetToken) => targetToken.includes(queryToken)))) {
+    return 560;
+  }
+
+  return null;
+}
+
+export function permissiveSearchScore(row: Reglementare, query: string) {
+  const strictScore = strictSearchScore(row, query);
+  if (strictScore !== null) return strictScore;
+
+  const queryTokens = searchTokens(query);
+  if (queryTokens.length === 0) return 0;
+
+  const targetTokens = searchTokens(searchableText(row));
+  if (queryTokens.every((queryToken) => targetTokens.some((targetToken) => tokenMatches(queryToken, targetToken)))) {
+    return 420;
+  }
+
+  return null;
+}
+
+export function searchScore(row: Reglementare, query: string, wideSearch = false) {
+  return wideSearch ? permissiveSearchScore(row, query) : strictSearchScore(row, query);
+}
+
+export function matchesPermissiveSearch(row: Reglementare, query: string) {
+  return permissiveSearchScore(row, query) !== null;
 }

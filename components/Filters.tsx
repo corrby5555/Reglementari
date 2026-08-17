@@ -17,6 +17,7 @@ export function Filters() {
     ["q", "tipReglementare", "disciplina", "domeniu", "tipCladire", "limba", "an"].forEach((key) => {
       setValue(params, key, String(formData.get(key) || "").trim());
     });
+    setValue(params, "cautareLarga", formData.get("cautareLarga") ? "1" : "");
     router.push(`/?${params.toString()}`);
   }
 
@@ -26,6 +27,16 @@ export function Filters() {
         <label className="grid gap-1 md:col-span-2">
           <span className="label">Căutare</span>
           <input name="q" className="field" defaultValue={searchParams.get("q") || ""} placeholder="Indicativ, denumire, descriere, cuvinte cheie" />
+          <span className="mt-1 inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+            <input
+              name="cautareLarga"
+              type="checkbox"
+              value="1"
+              defaultChecked={searchParams.get("cautareLarga") === "1"}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            Căutare largă
+          </span>
         </label>
         <label className="grid gap-1">
           <span className="label">An</span>
