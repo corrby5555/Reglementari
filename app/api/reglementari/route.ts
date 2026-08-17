@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       data: {
         ...parsed,
         numeFisier: savedFile.fileName,
-        caleFisier: savedFile.fullPath,
+        caleFisier: savedFile.relativePath,
       },
     });
 

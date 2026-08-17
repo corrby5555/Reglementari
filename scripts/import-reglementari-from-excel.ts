@@ -254,7 +254,7 @@ async function importOne(row: ImportRow, dryRun: boolean) {
         denumireExacta: row.denumireExacta,
         limba: row.limba,
         numeFisier: target.fileName,
-        caleFisier: target.fullPath,
+        caleFisier: target.relativePath,
       },
       select: { id: true },
     });

@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       data: {
         ...parsed,
         numeFisier: target.fileName,
-        caleFisier: target.fullPath,
+        caleFisier: target.relativePath,
       },
       select: { id: true },
     });

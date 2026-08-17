@@ -84,7 +84,7 @@ export async function PATCH(request: Request, { params }: DetailRouteProps) {
       data: {
         ...parsed,
         numeFisier: movedFile.fileName,
-        caleFisier: movedFile.fullPath,
+        caleFisier: movedFile.relativePath,
       },
     });
 

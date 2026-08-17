@@ -2,6 +2,7 @@ import { stat, readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { getRegulation } from "@/lib/reglementari";
+import { resolveStoragePath } from "@/lib/storage";
 
 type FileRouteProps = {
   params: { id: string };
@@ -29,8 +30,9 @@ export async function GET(_: Request, { params }: FileRouteProps) {
   }
 
   try {
-    await stat(item.caleFisier);
-    const content = await readFile(item.caleFisier);
+    const filePath = resolveStoragePath(item.caleFisier);
+    await stat(filePath);
+    const content = await readFile(filePath);
     return new NextResponse(content, {
       headers: {
         "Content-Type": contentTypeFor(item.numeFisier),

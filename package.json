@@ -10,6 +10,7 @@
     "db:generate": "prisma generate",
     "setup:db": "tsx scripts/setup-db.ts",
     "reset:storage-db": "tsx scripts/reset-storage-and-db.ts",
+    "migrate:storage-paths": "tsx scripts/migrate-storage-paths-to-relative.ts",
     "import:reglementari": "tsx scripts/import-reglementari-from-excel.ts",
     "resolve:similar-pdfs": "tsx scripts/resolve-similar-pdfs.ts",
     "test": "vitest run"
