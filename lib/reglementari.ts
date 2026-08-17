@@ -66,18 +66,65 @@ export async function listRegulations(filters: RegulationFilters = {}) {
 }
 
 
-function indicativeSortKey(value: string) {
+function normalizeIndicative(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase()
-    .trim()
-    .replace(/\d+/g, (match) => match.padStart(3, "0"));
+    .trim();
+}
+
+function indicativeTokens(value: string) {
+  return normalizeIndicative(value).match(/\d+|\D+/g) || [];
+}
+
+function compareNumericText(left: string, right: string) {
+  const normalizedLeft = left.replace(/^0+/, "") || "0";
+  const normalizedRight = right.replace(/^0+/, "") || "0";
+
+  if (normalizedLeft.length !== normalizedRight.length) {
+    return normalizedLeft.length - normalizedRight.length;
+  }
+
+  const byValue = normalizedLeft.localeCompare(normalizedRight);
+  if (byValue !== 0) return byValue;
+
+  return left.length - right.length;
+}
+
+function compareIndicatives(left: string, right: string) {
+  const leftTokens = indicativeTokens(left);
+  const rightTokens = indicativeTokens(right);
+  const length = Math.max(leftTokens.length, rightTokens.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const leftToken = leftTokens[index];
+    const rightToken = rightTokens[index];
+    if (leftToken === undefined) return -1;
+    if (rightToken === undefined) return 1;
+
+    const leftIsNumber = /^\d+$/.test(leftToken);
+    const rightIsNumber = /^\d+$/.test(rightToken);
+    if (leftIsNumber && rightIsNumber) {
+      const byNumber = compareNumericText(leftToken, rightToken);
+      if (byNumber !== 0) return byNumber;
+      continue;
+    }
+
+    if (leftIsNumber !== rightIsNumber) {
+      return leftIsNumber ? -1 : 1;
+    }
+
+    const byText = leftToken.localeCompare(rightToken, "ro", { sensitivity: "base" });
+    if (byText !== 0) return byText;
+  }
+
+  return 0;
 }
 
 export function sortRegulationsByIndicativ(rows: Reglementare[]) {
   return [...rows].sort((left, right) => {
-    const byIndicativ = indicativeSortKey(left.indicativ).localeCompare(indicativeSortKey(right.indicativ), "ro", { sensitivity: "base" });
+    const byIndicativ = compareIndicatives(left.indicativ, right.indicativ);
     if (byIndicativ !== 0) return byIndicativ;
     const byYear = left.an - right.an;
     if (byYear !== 0) return byYear;
@@ -111,7 +158,7 @@ export function sortRegulations(rows: Reglementare[], sort?: string, dir?: strin
     const bySelectedField = compareText(String(left[field] || ""), String(right[field] || ""));
     if (bySelectedField !== 0) return bySelectedField * multiplier;
 
-    const byIndicativ = indicativeSortKey(left.indicativ).localeCompare(indicativeSortKey(right.indicativ), "ro", { sensitivity: "base" });
+    const byIndicativ = compareIndicatives(left.indicativ, right.indicativ);
     if (byIndicativ !== 0) return byIndicativ;
 
     return (left.an - right.an) || compareText(left.denumireExacta, right.denumireExacta);

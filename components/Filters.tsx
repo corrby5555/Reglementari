@@ -27,16 +27,6 @@ export function Filters() {
         <label className="grid gap-1 md:col-span-2">
           <span className="label">Căutare</span>
           <input name="q" className="field" defaultValue={searchParams.get("q") || ""} placeholder="Indicativ, denumire, descriere, cuvinte cheie" />
-          <span className="mt-1 inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
-            <input
-              name="cautareLarga"
-              type="checkbox"
-              value="1"
-              defaultChecked={searchParams.get("cautareLarga") === "1"}
-              className="h-4 w-4 rounded border-slate-300"
-            />
-            Căutare largă
-          </span>
         </label>
         <label className="grid gap-1">
           <span className="label">An</span>
@@ -77,9 +67,21 @@ export function Filters() {
           <input name="tipCladire" className="field" defaultValue={searchParams.get("tipCladire") || ""} />
         </label>
       </div>
-      <div className="flex justify-end gap-2">
-        <button className="btn btn-primary" type="submit">Filtrează</button>
-        <button className="btn" type="button" onClick={() => router.push("/")}>Resetează</button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+          <input
+            name="cautareLarga"
+            type="checkbox"
+            value="1"
+            defaultChecked={searchParams.get("cautareLarga") === "1"}
+            className="h-4 w-4 rounded border-slate-300"
+          />
+          Căutare largă
+        </label>
+        <div className="flex justify-end gap-2">
+          <button className="btn btn-primary" type="submit">Filtrează</button>
+          <button className="btn" type="button" onClick={() => router.push("/")}>Resetează</button>
+        </div>
       </div>
     </form>
   );

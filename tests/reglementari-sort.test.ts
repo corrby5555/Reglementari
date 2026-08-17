@@ -38,6 +38,28 @@ describe("sortarea reglementarilor dupa indicativ", () => {
     expect(result.map((item) => item.indicativ)).toEqual(["C.3", "C.4", "C.5", "C.39", "C.40"]);
   });
 
+  it("ordoneaza numeric corect si cand numerele au lungimi foarte diferite", () => {
+    const result = sortRegulationsByIndicativ([
+      row("XX.12493"),
+      row("XX.245"),
+      row("XX.45"),
+      row("XX.35"),
+    ]);
+
+    expect(result.map((item) => item.indicativ)).toEqual(["XX.35", "XX.45", "XX.245", "XX.12493"]);
+  });
+
+  it("ordoneaza natural indicativele cu subparti dupa cratima", () => {
+    const result = sortRegulationsByIndicativ([
+      row("P.118-10"),
+      row("P.118"),
+      row("P.118-2"),
+      row("P.118-1"),
+    ]);
+
+    expect(result.map((item) => item.indicativ)).toEqual(["P.118", "P.118-1", "P.118-2", "P.118-10"]);
+  });
+
   it("ordoneaza alfabetic dupa tip reglementare ascendent si descendent", () => {
     const rows = [
       row("C.1", { tipReglementare: "standarde" }),
