@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import type { Reglementare } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { parseIndicativeReferences, regulationReference } from "@/lib/indicative-references";
+import { matchesPermissiveSearch } from "@/lib/search";
 
 export type RegulationSortField = "indicativ" | "tipReglementare" | "tipDocument";
 export type RegulationSortDirection = "asc" | "desc";
@@ -18,7 +19,7 @@ export type RegulationFilters = {
   dir?: string;
 };
 
-export function buildWhere(filters: RegulationFilters): Prisma.ReglementareWhereInput {
+export function buildWhere(filters: RegulationFilters, includeSearch = true): Prisma.ReglementareWhereInput {
   const where: Prisma.ReglementareWhereInput = {};
 
   if (filters.tipReglementare) where.tipReglementare = filters.tipReglementare;
@@ -28,7 +29,7 @@ export function buildWhere(filters: RegulationFilters): Prisma.ReglementareWhere
   if (filters.limba) where.limba = filters.limba;
   if (filters.an && Number.isFinite(Number(filters.an))) where.an = Number(filters.an);
 
-  if (filters.q) {
+  if (includeSearch && filters.q) {
     where.OR = [
       { indicativ: { contains: filters.q } },
       { denumireExacta: { contains: filters.q } },
@@ -42,12 +43,14 @@ export function buildWhere(filters: RegulationFilters): Prisma.ReglementareWhere
 
 export async function listRegulations(filters: RegulationFilters = {}) {
   const rows = await prisma.reglementare.findMany({
-    where: buildWhere(filters),
+    where: buildWhere(filters, false),
     orderBy: [{ indicativ: "asc" }, { an: "asc" }],
   });
 
-  return sortRegulations(rows, filters.sort, filters.dir);
+  const searchedRows = filters.q ? rows.filter((row) => matchesPermissiveSearch(row, filters.q || "")) : rows;
+  return sortRegulations(searchedRows, filters.sort, filters.dir);
 }
+
 
 function indicativeSortKey(value: string) {
   return value

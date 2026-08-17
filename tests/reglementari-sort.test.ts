@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Reglementare } from "@prisma/client";
 import { sortRegulations, sortRegulationsByIndicativ } from "../lib/reglementari";
+import { matchesPermissiveSearch } from "../lib/search";
 
 function row(indicativ: string, overrides: Partial<Reglementare> = {}): Reglementare {
   return {
@@ -68,5 +69,27 @@ describe("sortarea reglementarilor dupa indicativ", () => {
       "legislatie",
       "tehnic",
     ]);
+  });
+});
+
+describe("cautarea permisiva in catalog", () => {
+  const regulation = row("P.118", {
+    an: 1999,
+    denumireExacta: "Normativ privind securitatea la incendiu a construcțiilor școlare",
+    descriere: "Soluții tehnice pentru școli și săli aglomerate.",
+    tipCladire: "educație, școală",
+  });
+
+  it("gaseste indicative indiferent de separator", () => {
+    expect(matchesPermissiveSearch(regulation, "P118")).toBe(true);
+    expect(matchesPermissiveSearch(regulation, "P_118")).toBe(true);
+    expect(matchesPermissiveSearch(regulation, "P-118")).toBe(true);
+  });
+
+  it("gaseste cuvinte fara diacritice si cu mici greseli", () => {
+    expect(matchesPermissiveSearch(regulation, "școală")).toBe(true);
+    expect(matchesPermissiveSearch(regulation, "scoala")).toBe(true);
+    expect(matchesPermissiveSearch(regulation, "școli")).toBe(true);
+    expect(matchesPermissiveSearch(regulation, "scloi")).toBe(true);
   });
 });
