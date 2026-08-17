@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #eef2f7;
+  color: #182235;
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto grid max-w-7xl gap-5 px-4 py-5;
+  }
+
+  .topbar {
+    @apply sticky top-0 z-20 border-b border-slate-800 bg-ink text-white;
+  }
+
+  .btn {
+    @apply inline-flex h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50;
+  }
+
+  .btn-primary {
+    @apply border-accent bg-accent text-white hover:bg-teal-800;
+  }
+
+  .field {
+    @apply h-10 w-full rounded border border-slate-300 bg-white px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-teal-100;
+  }
+
+  .textarea {
+    @apply min-h-28 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-teal-100;
+  }
+
+  .label {
+    @apply text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500;
+  }
+
+  .sheet {
+    @apply rounded-md border border-gridline bg-white shadow-sm;
+  }
+
+  .headcell {
+    @apply border-b border-r border-gridline bg-slate-100 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-600;
+  }
+
+  .cell {
+    @apply border-b border-r border-gridline px-3 py-2 text-sm;
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200;
+  }
+}

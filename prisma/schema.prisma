@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Reglementare {
+  id               Int      @id @default(autoincrement())
+  indicativ        String   @db.VarChar(80)
+  an               Int
+  tipReglementare String   @map("tip_reglementare") @db.VarChar(80)
+  tipDocument      String   @default("informatie") @map("tip_document") @db.VarChar(40)
+  disciplina       String   @db.VarChar(120)
+  domeniu          String   @db.VarChar(180)
+  descriereNumeFisier String @default("") @map("descriere_nume_fisier") @db.VarChar(180)
+  actualizeazaIndicativ String @default("") @map("actualizeaza_indicativ") @db.VarChar(1000)
+  tipCladire       String   @map("tip_cladire") @db.VarChar(180)
+  descriere        String   @db.Text
+  denumireExacta   String   @map("denumire_exacta") @db.VarChar(500)
+  limba            String   @db.VarChar(8)
+  numeFisier       String   @map("nume_fisier") @db.VarChar(260)
+  caleFisier       String   @map("cale_fisier") @db.VarChar(1000)
+  dataAdaugare     DateTime @default(now()) @map("data_adaugare")
+
+  @@unique([indicativ, an], map: "reglementari_indicativ_an_unique")
+  @@index([tipReglementare], map: "reglementari_tip_idx")
+  @@index([disciplina], map: "reglementari_disciplina_idx")
+  @@index([limba], map: "reglementari_limba_idx")
+  @@map("reglementari")
+}
