@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import type { Reglementare } from "@prisma/client";
 import { Filters } from "@/components/Filters";
 import { RegulationTable } from "@/components/RegulationTable";
 import { RegulationSummary } from "@/components/RegulationSummary";
+import { canWriteFromHeaders } from "@/lib/access-control";
 import { buildUpdatedByMap, listRegulations, type RegulationFilters, type UpdatedByReference } from "@/lib/reglementari";
 
 type PageProps = {
@@ -15,6 +17,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   let summaryRows: Reglementare[] = [];
   let updatedByMap: Record<number, UpdatedByReference[]> = {};
   let error = "";
+  const canWrite = canWriteFromHeaders(headers());
 
   try {
     rows = await listRegulations(searchParams);
@@ -31,7 +34,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <p className="label">Catalog intern</p>
           <h1 className="text-3xl font-bold text-ink">Reglementări tehnice</h1>
         </div>
-        <Link href="/reglementari/new" className="btn btn-primary">Adaugă reglementare</Link>
+        {canWrite ? <Link href="/reglementari/new" className="btn btn-primary">Adaugă reglementare</Link> : null}
       </div>
       <Suspense fallback={<div className="sheet p-4 text-sm text-slate-500">Se încarcă filtrele...</div>}>
         <Filters />

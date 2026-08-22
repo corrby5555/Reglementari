@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { canWriteFromHeaders } from "@/lib/access-control";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,6 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const canWrite = canWriteFromHeaders(headers());
+
   return (
     <html lang="ro">
       <body>
@@ -20,12 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/" className="btn border-slate-600 bg-slate-900 text-white hover:bg-slate-800">
                 Catalog
               </Link>
-              <Link href="/reglementari/new" className="btn btn-primary">
-                Adaugă
-              </Link>
-              <Link href="/reglementari/bulk" className="btn btn-primary">
-                Bulk
-              </Link>
+              {canWrite ? (
+                <Link href="/reglementari/new" className="btn btn-primary">
+                  Adaugă
+                </Link>
+              ) : null}
             </nav>
           </div>
         </header>

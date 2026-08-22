@@ -29,7 +29,8 @@ FLUSH PRIVILEGES;
 DATABASE_URL="mysql://reglementari:parola_ta@10.0.0.245:3306/reglementari"
 REGLEMENTARI_STORAGE_SHARE="//10.0.0.231/Documentatie"
 REGLEMENTARI_STORAGE_DIR="/Volumes/Documentatie"
-REGLEMENTARI_BULK_DIR="/Volumes/Documentatie/0_Reglementari"
+REGLEMENTARI_WRITE_IPS="127.0.0.1,10.0.0.12,10.8.0.0/24"
+REGLEMENTARI_READONLY_IPS="10.0.0.0/24"
 ```
 
 3. Instalează dependențele și inițializează tabela:
@@ -92,45 +93,25 @@ Dacă disciplina este `general`, se mai creează un nivel cu domeniul:
 
 Baza de date reține doar `nume_fisier` și `cale_fisier`.
 
-## Import provizoriu din Excel
+## Control acces după IP
 
-Scriptul provizoriu citește un fișier Excel, caută PDF-urile într-un folder sursă, le copiază redenumite în storage, creează înregistrările în MariaDB și apoi șterge PDF-ul sursă. Dacă lângă PDF există un fișier `.doc` sau `.docx` cu același nume de bază, îl șterge după importul reușit.
+Aplicația poate limita operațiile de scriere după IP-ul calculatorului client.
 
-Coloane acceptate în Excel, cu denumiri flexibile:
+`REGLEMENTARI_WRITE_IPS` definește IP-urile sau subneturile care pot adăuga, modifica și șterge reglementări. Acceptă IP-uri exacte și CIDR, separate prin virgulă:
 
-```text
-indicativ
-an
-tip reglementare
-tip document
-disciplina
-domeniu
-descriere nume fisier
-actualizeaza indicativ
-cuvinte cheie
-descriere
-denumire exacta
-limba
-fisier pdf
+```env
+REGLEMENTARI_WRITE_IPS="127.0.0.1,10.0.0.12,10.8.0.0/24"
 ```
 
-Rulare de probă, fără modificări:
+`REGLEMENTARI_READONLY_IPS` este documentar/configurabil pentru rețeaua permisă la citire:
 
-```bash
-npm run import:reglementari -- --excel /cale/catalog.xlsx --source-dir /cale/pdf-uri --dry-run
+```env
+REGLEMENTARI_READONLY_IPS="10.0.0.0/24"
 ```
 
-Rulare efectivă:
+Dacă nu este configurată nicio regulă, aplicația permite scrierea, ca să nu blocheze dezvoltarea locală. După configurarea `REGLEMENTARI_WRITE_IPS`, toate IP-urile care nu se potrivesc cu lista respectivă au doar acces de citire. Protecția este aplicată atât în interfață, cât și pe API-urile `POST`, `PATCH` și `DELETE`.
 
-```bash
-npm run import:reglementari -- --excel /cale/catalog.xlsx --source-dir /cale/pdf-uri
-```
-
-Opțional, pentru un sheet anume:
-
-```bash
-npm run import:reglementari -- --excel /cale/catalog.xlsx --source-dir /cale/pdf-uri --sheet Sheet1
-```
+În spatele unui proxy/nginx, transmite IP-ul real prin `X-Forwarded-For` sau `X-Real-IP`.
 
 ## TODO
 

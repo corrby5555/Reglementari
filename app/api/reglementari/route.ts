@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+import { canWriteFromHeaders, forbiddenWriteResponse } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
 import { listRegulations } from "@/lib/reglementari";
 import { saveRegulationFile } from "@/lib/storage";
@@ -15,12 +16,19 @@ export async function GET(request: NextRequest) {
     tipCladire: params.get("tipCladire") || undefined,
     limba: params.get("limba") || undefined,
     an: params.get("an") || undefined,
+    sort: params.get("sort") || undefined,
+    dir: params.get("dir") || undefined,
+    cautareLarga: params.get("cautareLarga") || undefined,
   });
 
   return NextResponse.json({ data: rows });
 }
 
 export async function POST(request: NextRequest) {
+  if (!canWriteFromHeaders(request.headers)) {
+    return forbiddenWriteResponse();
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file");

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+import { canWriteFromHeaders, forbiddenWriteResponse } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
 import { getRegulation } from "@/lib/reglementari";
 import { deleteRegulationFile, moveRegulationFile, replaceRegulationFile } from "@/lib/storage";
@@ -24,6 +25,10 @@ export async function GET(_: Request, { params }: DetailRouteProps) {
 }
 
 export async function PATCH(request: Request, { params }: DetailRouteProps) {
+  if (!canWriteFromHeaders(request.headers)) {
+    return forbiddenWriteResponse();
+  }
+
   const id = Number(params.id);
   if (!Number.isFinite(id)) {
     return NextResponse.json({ error: "ID invalid." }, { status: 400 });
@@ -99,7 +104,11 @@ export async function PATCH(request: Request, { params }: DetailRouteProps) {
   }
 }
 
-export async function DELETE(_: Request, { params }: DetailRouteProps) {
+export async function DELETE(request: Request, { params }: DetailRouteProps) {
+  if (!canWriteFromHeaders(request.headers)) {
+    return forbiddenWriteResponse();
+  }
+
   const id = Number(params.id);
   if (!Number.isFinite(id)) {
     return NextResponse.json({ error: "ID invalid." }, { status: 400 });
