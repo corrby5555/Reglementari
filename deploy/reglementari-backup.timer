@@ -1,0 +1,10 @@
+[Unit]
+Description=Rulează backupul Reglementări la 23:50 Europe/Bucharest
+
+[Timer]
+OnCalendar=*-*-* 23:50:00 Europe/Bucharest
+Persistent=true
+Unit=reglementari-backup.service
+
+[Install]
+WantedBy=timers.target

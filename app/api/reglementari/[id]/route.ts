@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { canWriteFromHeaders, forbiddenWriteResponse } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
+import { runProtectedDatabaseWrite } from "@/lib/backup-protection";
 import { getRegulation } from "@/lib/reglementari";
 import { deleteRegulationFile, moveRegulationFile, replaceRegulationFile } from "@/lib/storage";
 import { regulationSchema } from "@/lib/validation";
@@ -81,16 +82,18 @@ export async function PATCH(request: Request, { params }: DetailRouteProps) {
       return NextResponse.json({ error: "Există deja o reglementare cu același indicativ și același an." }, { status: 409 });
     }
 
-    const movedFile = replacementFile
-      ? await replaceRegulationFile(replacementFile, item.caleFisier, parsed)
-      : await moveRegulationFile(item.caleFisier, parsed);
-    const updated = await prisma.reglementare.update({
-      where: { id },
-      data: {
-        ...parsed,
-        numeFisier: movedFile.fileName,
-        caleFisier: movedFile.relativePath,
-      },
+    const updated = await runProtectedDatabaseWrite(async () => {
+      const movedFile = replacementFile
+        ? await replaceRegulationFile(replacementFile, item.caleFisier, parsed)
+        : await moveRegulationFile(item.caleFisier, parsed);
+      return prisma.reglementare.update({
+        where: { id },
+        data: {
+          ...parsed,
+          numeFisier: movedFile.fileName,
+          caleFisier: movedFile.relativePath,
+        },
+      });
     });
 
     return NextResponse.json({ data: updated });
@@ -120,7 +123,7 @@ export async function DELETE(request: Request, { params }: DetailRouteProps) {
       return NextResponse.json({ error: "Reglementarea nu există." }, { status: 404 });
     }
 
-    await prisma.reglementare.delete({ where: { id } });
+    await runProtectedDatabaseWrite(() => prisma.reglementare.delete({ where: { id } }));
     await deleteRegulationFile(item.caleFisier);
 
     return NextResponse.json({ ok: true });

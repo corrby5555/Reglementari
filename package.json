@@ -11,6 +11,7 @@
     "setup:db": "tsx scripts/setup-db.ts",
     "reset:storage-db": "tsx scripts/reset-storage-and-db.ts",
     "migrate:storage-paths": "tsx scripts/migrate-storage-paths-to-relative.ts",
+    "backup:db": "tsx scripts/backup-mariadb.ts",
     "test": "vitest run"
   },
   "dependencies": {

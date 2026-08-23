@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { canWriteFromHeaders } from "@/lib/access-control";
+import { ProtectedWriteLink } from "@/components/ProtectedWriteLink";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,9 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Catalog
               </Link>
               {canWrite ? (
-                <Link href="/reglementari/new" className="btn btn-primary">
+                <ProtectedWriteLink href="/reglementari/new" className="btn btn-primary">
                   Adaugă
-                </Link>
+                </ProtectedWriteLink>
               ) : null}
             </nav>
           </div>

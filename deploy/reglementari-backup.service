@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup condiționat MariaDB pentru Reglementări
+After=mariadb.service network-online.target
+
+[Service]
+Type=oneshot
+User=asandu
+Group=asandu
+WorkingDirectory=/home/asandu/Reglementari
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm run backup:db -- --if-changed
+

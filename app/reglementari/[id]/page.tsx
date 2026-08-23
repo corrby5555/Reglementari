@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { DeleteRegulationButton } from "@/components/DeleteRegulationButton";
+import { ProtectedWriteLink } from "@/components/ProtectedWriteLink";
 import { canWriteFromHeaders } from "@/lib/access-control";
 import { parseIndicativeReferences } from "@/lib/indicative-references";
 import { getRegulation, listRegulationsByReferences, listUpdatesForIndicativ } from "@/lib/reglementari";
@@ -39,7 +40,7 @@ export default async function RegulationDetailPage({ params }: DetailProps) {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/" className="btn">Retur</Link>
-          {canWrite ? <Link href={`/reglementari/${item.id}/edit`} className="btn">Modifică</Link> : null}
+          {canWrite ? <ProtectedWriteLink href={`/reglementari/${item.id}/edit`} className="btn">Modifică</ProtectedWriteLink> : null}
           {canWrite ? <DeleteRegulationButton id={item.id} /> : null}
           <a href={`/api/reglementari/${item.id}/fisier`} className="btn btn-primary" target="_blank" rel="noopener noreferrer">
             Deschide fișier

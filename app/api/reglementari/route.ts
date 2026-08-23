@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { canWriteFromHeaders, forbiddenWriteResponse } from "@/lib/access-control";
 import { prisma } from "@/lib/db";
+import { runProtectedDatabaseWrite } from "@/lib/backup-protection";
 import { listRegulations } from "@/lib/reglementari";
-import { saveRegulationFile } from "@/lib/storage";
+import { deleteRegulationFile, saveRegulationFile } from "@/lib/storage";
 import { regulationSchema } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
@@ -60,13 +61,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Există deja o reglementare cu același indicativ și același an." }, { status: 409 });
     }
 
-    const savedFile = await saveRegulationFile(file, parsed);
-    const created = await prisma.reglementare.create({
-      data: {
-        ...parsed,
-        numeFisier: savedFile.fileName,
-        caleFisier: savedFile.relativePath,
-      },
+    const created = await runProtectedDatabaseWrite(async () => {
+      const savedFile = await saveRegulationFile(file, parsed);
+      try {
+        return await prisma.reglementare.create({
+          data: {
+            ...parsed,
+            numeFisier: savedFile.fileName,
+            caleFisier: savedFile.relativePath,
+          },
+        });
+      } catch (error) {
+        await deleteRegulationFile(savedFile.relativePath).catch(() => undefined);
+        throw error;
+      }
     });
 
     return NextResponse.json({ id: created.id }, { status: 201 });

@@ -5,6 +5,8 @@ import type { Reglementare } from "@prisma/client";
 import { Filters } from "@/components/Filters";
 import { RegulationTable } from "@/components/RegulationTable";
 import { RegulationSummary } from "@/components/RegulationSummary";
+import { ProtectedWriteLink } from "@/components/ProtectedWriteLink";
+import { readBackupStatus } from "@/lib/backup-status";
 import { canWriteFromHeaders } from "@/lib/access-control";
 import { buildUpdatedByMap, listRegulations, type RegulationFilters, type UpdatedByReference } from "@/lib/reglementari";
 
@@ -18,6 +20,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   let updatedByMap: Record<number, UpdatedByReference[]> = {};
   let error = "";
   const canWrite = canWriteFromHeaders(headers());
+  const backupStatus = readBackupStatus();
 
   try {
     rows = await listRegulations(searchParams);
@@ -34,8 +37,14 @@ export default async function HomePage({ searchParams }: PageProps) {
           <p className="label">Catalog intern</p>
           <h1 className="text-3xl font-bold text-ink">Reglementări tehnice</h1>
         </div>
-        {canWrite ? <Link href="/reglementari/new" className="btn btn-primary">Adaugă reglementare</Link> : null}
+        {canWrite ? <ProtectedWriteLink href="/reglementari/new" className="btn btn-primary">Adaugă reglementare</ProtectedWriteLink> : null}
       </div>
+      {backupStatus ? (
+        <div className={`sheet p-3 text-sm font-semibold ${backupStatus.status === "failed" ? "border-red-300 bg-red-50 text-red-800" : backupStatus.status === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-slate-300 bg-slate-50 text-slate-700"}`}>
+          Backup bază: {backupStatus.status === "success" ? "reușit" : backupStatus.status === "failed" ? "eșuat" : backupStatus.status === "running" ? "în curs" : "omis, fără modificări"}
+          {backupStatus.message ? ` — ${backupStatus.message}` : ""}
+        </div>
+      ) : null}
       <Suspense fallback={<div className="sheet p-4 text-sm text-slate-500">Se încarcă filtrele...</div>}>
         <Filters />
       </Suspense>

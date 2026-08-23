@@ -31,6 +31,9 @@ REGLEMENTARI_STORAGE_SHARE="//10.0.0.231/Documentatie"
 REGLEMENTARI_STORAGE_DIR="/Volumes/Documentatie"
 REGLEMENTARI_WRITE_IPS="127.0.0.1,10.0.0.12,10.8.0.0/24"
 REGLEMENTARI_READONLY_IPS="10.0.0.0/24"
+REGLEMENTARI_BACKUP_DIR="backups/daily-db"
+REGLEMENTARI_BACKUP_RETENTION_DAYS=90
+APP_TIME_ZONE="Europe/Bucharest"
 ```
 
 3. Instalează dependențele și inițializează tabela:
@@ -112,6 +115,28 @@ REGLEMENTARI_READONLY_IPS="10.0.0.0/24"
 Dacă nu este configurată nicio regulă, aplicația permite scrierea, ca să nu blocheze dezvoltarea locală. După configurarea `REGLEMENTARI_WRITE_IPS`, toate IP-urile care nu se potrivesc cu lista respectivă au doar acces de citire. Protecția este aplicată atât în interfață, cât și pe API-urile `POST`, `PATCH` și `DELETE`.
 
 În spatele unui proxy/nginx, transmite IP-ul real prin `X-Forwarded-For` sau `X-Real-IP`.
+
+## Backup protejat MariaDB
+
+Aplicația creează backupuri comprimate ale bazei MariaDB și câte un manifest SHA-256 pentru întregul tabel `reglementari`. Înaintea primei adăugări, modificări sau ștergeri din fiecare zi, baza este comparată cu ultima stare validă. Orice diferență blochează scrierea și este afișată utilizatorului. Starea ultimului backup este afișată și pe pagina principală.
+
+La prima instalare a protecției trebuie creat reperul inițial înainte de restartarea aplicației:
+
+```bash
+npm run backup:db
+```
+
+Backupul programat rulează la 23:50, ora României, și creează un fișier numai dacă baza s-a modificat. Instalează unitățile incluse:
+
+```bash
+sudo cp deploy/reglementari-backup.service /etc/systemd/system/
+sudo cp deploy/reglementari-backup.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now reglementari-backup.timer
+systemctl list-timers reglementari-backup.timer
+```
+
+Fișierele PDF sunt pe storage-ul montat și nu sunt duplicate în dumpul MariaDB. Backupul bazei protejează metadatele și căile lor; storage-ul trebuie inclus separat în politica de backup a serverului/NAS-ului.
 
 ## TODO
 
