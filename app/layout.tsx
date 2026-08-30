@@ -26,6 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Catalog
               </Link>
               {canWrite ? (
+                <Link href="/administrare" className="btn border-slate-600 bg-slate-900 text-white hover:bg-slate-800">
+                  Administrare
+                </Link>
+              ) : null}
+              {canWrite ? (
                 <ProtectedWriteLink href="/reglementari/new" className="btn btn-primary">
                   Adaugă
                 </ProtectedWriteLink>

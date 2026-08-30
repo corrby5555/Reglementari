@@ -17,6 +17,7 @@ type DuplicateState = {
   exists: boolean;
   message: string;
   tone: "neutral" | "success" | "warning" | "error";
+  regulationId?: number;
 };
 
 export function AddRegulationForm() {
@@ -75,6 +76,7 @@ export function AddRegulationForm() {
               exists: true,
               message: `Indicativ existent: ${payload.data.indicativ}/${payload.data.an}: ${payload.data.denumireExacta}`,
               tone: "error",
+              regulationId: payload.data.id,
             });
             return;
           }
@@ -85,6 +87,7 @@ export function AddRegulationForm() {
               exists: false,
               message: `Pare că noua reglementare este o actualizare a uneia deja existente: ${payload.data.indicativ}/${payload.data.an}: ${payload.data.denumireExacta}`,
               tone: "warning",
+              regulationId: payload.data.id,
             });
             return;
           }
@@ -95,6 +98,7 @@ export function AddRegulationForm() {
               exists: false,
               message: `Reglementarea pare prea veche: există o reglementare mai nouă în baza de date, ${payload.data.indicativ}/${payload.data.an}: ${payload.data.denumireExacta}`,
               tone: "warning",
+              regulationId: payload.data.id,
             });
             return;
           }
@@ -201,7 +205,17 @@ export function AddRegulationForm() {
                   ? "border-slate-200 bg-slate-50 text-slate-600"
                   : "border-emerald-200 bg-emerald-50 text-emerald-700"
           }`}>
-            {duplicate.message}
+            {duplicate.regulationId ? (
+              <a
+                href={`/reglementari/${duplicate.regulationId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block underline decoration-current/40 underline-offset-2 hover:decoration-current"
+                title="Deschide reglementarea într-un tab nou"
+              >
+                {duplicate.message}
+              </a>
+            ) : duplicate.message}
           </div>
         ) : null}
         <div className="grid gap-3 md:grid-cols-[150px_130px_minmax(160px,0.8fr)_minmax(180px,1fr)_minmax(160px,0.8fr)]">

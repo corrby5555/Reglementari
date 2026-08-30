@@ -11,7 +11,7 @@ import {
   writeBackupManifest,
   type BackupManifest,
 } from "../lib/backup-protection";
-import { getBackupRoot, getBackupStatusPath, type DatabaseBackupStatus } from "../lib/backup-status";
+import { appendBackupLog, getBackupRoot, getBackupStatusPath, type DatabaseBackupStatus } from "../lib/backup-status";
 import { prisma } from "../lib/db";
 import { loadEnv } from "./env";
 
@@ -43,6 +43,7 @@ function timestamp(date: Date) {
 function writeStatus(status: DatabaseBackupStatus) {
   mkdirSync(getBackupRoot(), { recursive: true });
   writeFileSync(getBackupStatusPath(), JSON.stringify(status, null, 2), "utf8");
+  appendBackupLog(status);
 }
 
 function pruneOldBackups(retentionDays: number, now = new Date()) {
