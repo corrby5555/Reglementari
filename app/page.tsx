@@ -38,7 +38,10 @@ export default async function HomePage({ searchParams }: PageProps) {
           <p className="label">Catalog intern</p>
           <h1 className="text-3xl font-bold text-ink">Reglementări tehnice</h1>
         </div>
-        {canWrite ? <ProtectedWriteLink href="/reglementari/new" className="btn btn-primary">Adaugă reglementare</ProtectedWriteLink> : null}
+        <div className="flex flex-wrap gap-2">
+          <Link href="/cautare-extinsa" className="btn">Căutare extinsă</Link>
+          {canWrite ? <ProtectedWriteLink href="/reglementari/new" className="btn btn-primary">Adaugă reglementare</ProtectedWriteLink> : null}
+        </div>
       </div>
       {backupStatus ? (
         <BackupStatusBanner

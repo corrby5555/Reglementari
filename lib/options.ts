@@ -37,6 +37,8 @@ export const disciplines = [
   "rețele de incintă",
   "rețele electrice",
   "rețele termice",
+  "rețele de utilități",
+  "situații de urgență",
 ] as const;
 
 export const languages = ["RO", "EN", "FR"] as const;
@@ -50,6 +52,7 @@ export const documentTypes = [
 export const domainOptions = [
   "administrativ",
   "birouri",
+  "centru date",
   "clădiri înalte",
   "educație",
   "general",
@@ -57,6 +60,7 @@ export const domainOptions = [
   "industrial",
   "medical",
   "parcaje auto",
+  "piscină",
   "rezidențial",
   "retail",
   "săli aglomerate",
