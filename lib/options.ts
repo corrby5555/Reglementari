@@ -4,6 +4,7 @@ export const regulationTypes = [
   "prescripții tehnice (IT, ST, PT)",
   "ghiduri (GP, SC, GT)",
   "standarde",
+  "curs, publicații",
   "îndrumătoare",
   "legi",
   "manuale",
