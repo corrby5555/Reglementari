@@ -52,6 +52,7 @@ export const documentTypes = [
 
 export const domainOptions = [
   "administrativ",
+  "BIM",
   "birouri",
   "centru date",
   "clădiri înalte",
